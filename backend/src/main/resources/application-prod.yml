@@ -1,0 +1,22 @@
+# ===========================================
+# Geo Retail Analytics - Prod Profile (Ollama)
+# Uses local Ollama server with Llama 3.1
+# No API costs, data stays local
+# ===========================================
+
+spring:
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_MODEL:llama3.1:8b}
+          temperature: 0.7
+          num-predict: 2048
+
+# Production logging
+logging:
+  level:
+    root: INFO
+    com.geocom.retail: INFO
+    org.springframework.ai: WARN

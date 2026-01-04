@@ -1,0 +1,23 @@
+# ===========================================
+# Geo Retail Analytics - Dev Profile (Grok)
+# Uses xAI's Grok via OpenAI-compatible API
+# Free tier: 25 requests/hour
+# ===========================================
+
+spring:
+  ai:
+    openai:
+      api-key: ${GROK_API_KEY:}
+      base-url: https://api.x.ai/v1
+      chat:
+        options:
+          model: grok-beta
+          temperature: 0.7
+          max-tokens: 2048
+
+# Enable debug logging for development
+logging:
+  level:
+    com.geocom.retail: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web: DEBUG

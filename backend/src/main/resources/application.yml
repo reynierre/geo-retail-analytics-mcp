@@ -1,0 +1,43 @@
+# ===========================================
+# Geo Retail Analytics - Base Configuration
+# ===========================================
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: geo-retail-analytics
+
+  # ClickHouse Database
+  datasource:
+    url: jdbc:clickhouse://${CLICKHOUSE_HOST:localhost}:${CLICKHOUSE_PORT:8123}/${CLICKHOUSE_DB:geo_retail_analytics}
+    username: ${CLICKHOUSE_USER:default}
+    password: ${CLICKHOUSE_PASSWORD:}
+    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+# Retail Domain Configuration
+retail:
+  default-company-id: ${RETAIL_COMPANY_ID:1}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.geocom.retail: DEBUG
+    org.springframework.ai: DEBUG
