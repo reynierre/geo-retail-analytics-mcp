@@ -15,7 +15,7 @@ Sistema que permite consultar datos de tiendas retail mediante lenguaje natural.
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         ANGULAR 21 FRONTEND                                  │
-│  Chat UI con streaming, Signals, Zoneless, Tailwind CSS                     │
+│  Chat UI con Signals, Zoneless, Control Flow (@if/@for), Tailwind CSS 4     │
 └─────────────────────────────────┬───────────────────────────────────────────┘
                                   │ HTTP/SSE
                                   ▼
@@ -51,13 +51,15 @@ Sistema que permite consultar datos de tiendas retail mediante lenguaje natural.
 
 | Capa | Tecnología | Versión | Licencia | Función |
 |------|------------|---------|----------|---------|
-| **Frontend** | Angular | 21.x | MIT | Chat UI con streaming |
+| **Frontend** | Angular | 21.x | MIT | Chat UI con Signals + Zoneless |
+| **Styling** | Tailwind CSS | 4.x | MIT | Utility-first CSS |
 | **Backend** | Spring Boot | 3.4.x | Apache 2.0 | API + LLM + Tools (todo junto) |
 | **Build Tool** | Gradle | 8.11.x | Apache 2.0 | Build y gestión de dependencias |
 | **LLM Tools** | Spring AI | 1.0.x | Apache 2.0 | Anotación @Tool para tools |
 | **LLM (Dev/MVP)** | Grok (xAI) | Free Tier | Gratuito | LLM gratuito para desarrollo y MVP |
 | **LLM (Prod)** | Ollama + Llama 3.1 | 8B/70B | Apache 2.0 | LLM local para datos de producción |
 | **Analytics DB** | ClickHouse | 24.x | Apache 2.0 | Queries analíticas ultra-rápidas |
+| **BI Dashboard** | Apache Superset | 3.x | Apache 2.0 | Dashboards interactivos |
 | **Contenedores** | Docker Compose | - | Apache 2.0 | Orquestación local |
 | **Arquitectura** | DDD + Clean Code | - | - | Domain-Driven Design con 3 capas |
 
@@ -74,18 +76,33 @@ geo-retail-analytics-mcp/
 │   │   ├── spring-boot-expert.md      # Experto en Spring Boot
 │   │   ├── mcp-expert.md              # Experto en MCP/Tools
 │   │   ├── clickhouse-expert.md       # Experto en ClickHouse
+│   │   ├── devops-expert.md           # Experto en DevOps
 │   │   └── llm-integration-expert.md  # Experto en integración LLM
 │   └── skills/                        # Skills del proyecto
 │       ├── angular21/SKILL.md
 │       ├── spring-ai-mcp/SKILL.md
 │       ├── clickhouse/SKILL.md
+│       ├── kafka-integration/SKILL.md
+│       ├── monitoring/SKILL.md
 │       ├── ollama-integration/SKILL.md
 │       └── retail-domain/SKILL.md
 ├── frontend/                          # Angular 21 Chat UI
 │   ├── src/app/
-│   │   ├── chat/                      # Componentes del chat
-│   │   ├── services/                  # ChatService, ApiService
-│   │   └── shared/                    # Componentes compartidos
+│   │   ├── app.ts                     # Root component
+│   │   ├── app.config.ts              # Zoneless + providers
+│   │   ├── app.routes.ts
+│   │   ├── features/
+│   │   │   ├── chat/
+│   │   │   │   ├── chat.ts            # Main chat component
+│   │   │   │   ├── components/
+│   │   │   │   └── services/
+│   │   │   └── shared/                # 2+ features only
+│   │   │       ├── components/
+│   │   │       ├── pipes/
+│   │   │       └── directives/
+│   │   └── core/                      # Singleton services
+│   │       ├── services/
+│   │       └── interceptors/
 │   ├── angular.json
 │   └── package.json
 ├── backend/                           # Spring Boot + DDD + Clean Code
@@ -139,10 +156,17 @@ geo-retail-analytics-mcp/
 │       ├── 001_create_tables.sql      # DDL: tablas y vistas
 │       └── 002_seed_data.sql          # Datos de prueba (500K tickets)
 ├── docker/
-│   ├── docker-compose.dev.yml         # ClickHouse + Ollama
+│   ├── docker-compose.dev.yml         # ClickHouse + Kafka + Prometheus + Superset
+│   ├── docker-compose.prod.yml        # Producción con recursos
+│   ├── prometheus/
+│   │   └── prometheus.yml
+│   ├── superset/
+│   │   └── superset_config.py
 │   └── .env.example
 └── docs/
-    └── ARCHITECTURE.md
+    ├── ARCHITECTURE.md
+    ├── PRODUCTION.md
+    └── DATA-INGESTION.md
 ```
 
 ### ¿Por qué `database/`?
@@ -151,6 +175,113 @@ La carpeta `database/schema/` contiene scripts SQL que:
 1. **Se versionan en Git** - Cambios al schema son trazables
 2. **Se ejecutan automáticamente** - Docker los corre al iniciar ClickHouse
 3. **Incluyen datos de prueba** - 500K tickets listos para desarrollo
+
+---
+
+## 🎨 Frontend: Angular 21 Modern Patterns
+
+### Features Clave de Angular 21
+
+| Feature | Descripción |
+|---------|-------------|
+| **Signals** | `signal()`, `computed()`, `effect()` para estado reactivo |
+| **linkedSignal** | Estado dependiente que puede ser modificado |
+| **resource()** | Async data fetching reactivo |
+| **Zoneless** | `provideZonelessChangeDetection()` - sin Zone.js |
+| **Control Flow** | `@if`, `@for`, `@switch`, `@defer` nativo |
+| **input()/output()** | Funciones en lugar de decoradores |
+| **inject()** | DI sin constructor |
+| **Standalone** | Default - no necesita `standalone: true` |
+
+### App Configuration
+
+```typescript
+// app.config.ts
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),  // Sin Zone.js
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor]))
+  ]
+};
+```
+
+### Component Pattern
+
+```typescript
+import { Component, signal, computed, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
+
+@Component({
+  selector: 'app-chat',
+  // standalone: true NO necesario - es default
+  imports: [ChatMessageComponent, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'flex flex-col h-screen',
+    '[class.is-loading]': 'isLoading()'
+  },
+  template: `
+    @for (message of messages(); track message.id) {
+      <app-chat-message [message]="message" />
+    } @empty {
+      <p>No messages</p>
+    }
+    
+    @if (isStreaming()) {
+      <div>{{ streamingContent() }}<span class="animate-pulse">▊</span></div>
+    }
+    
+    @defer (on viewport) {
+      <app-suggestions />
+    } @placeholder {
+      <div class="skeleton h-24" />
+    }
+  `
+})
+export class ChatComponent {
+  private readonly chatService = inject(ChatService);
+  
+  // Inputs con funciones
+  readonly disabled = input(false);
+  
+  // Outputs con funciones
+  readonly messageSent = output<string>();
+  
+  // Signals para estado
+  protected readonly messages = this.chatService.messages;
+  protected readonly isStreaming = signal(false);
+  protected readonly streamingContent = signal('');
+  
+  // Computed para estado derivado
+  protected readonly hasMessages = computed(() => this.messages().length > 0);
+}
+```
+
+### Best Practices Angular 21
+
+#### ✅ DO
+- Usar `signal()` para todo estado
+- Usar `computed()` para estado derivado
+- Usar `inject()` en lugar de constructor
+- Usar `input()` / `output()` en lugar de decoradores
+- Usar `@if` / `@for` / `@switch` / `@defer`
+- Usar `track` en todos los `@for`
+- Usar `host` object en lugar de `@HostBinding`
+- Usar `OnPush` change detection
+
+#### ❌ DON'T
+- No usar `standalone: true` - es default
+- No usar `NgModules` para features
+- No usar `@Input()` / `@Output()` decoradores
+- No usar `*ngIf` / `*ngFor` directivas
+- No usar `ngClass` / `ngStyle`
+- No usar `@HostBinding` / `@HostListener`
+- No usar `any` type
+- No olvidar `track` en `@for`
 
 ---
 
@@ -228,166 +359,53 @@ Sale (Aggregate Root)
 
 ## ⚙️ Código de Referencia (Arquitectura DDD + Clean Code)
 
-### Domain Layer - Entidad y Puerto
+### RetailAnalyticsTools.java
 
 ```java
-// domain/model/SalesReport.java
-public record SalesReport(
-    String storeId,
-    String storeName,
-    long ticketCount,
-    BigDecimal totalSales,
-    BigDecimal averageTicket,
-    LocalDate startDate,
-    LocalDate endDate
-) {}
-
-// domain/repository/SalesRepository.java (Port)
-public interface SalesRepository {
-    SalesReport findSalesByStoreAndPeriod(String storeId, LocalDate start, LocalDate end);
-    List<StoreRanking> findStoresRanking(LocalDate start, LocalDate end, int limit);
-}
-```
-
-### Application Layer - Use Case
-
-```java
-// application/usecase/GetStoreSalesUseCase.java
-@Service
-@RequiredArgsConstructor
-public class GetStoreSalesUseCase {
-
-    private final SalesRepository salesRepository;
-
-    public SalesReport execute(String storeId, LocalDate startDate, LocalDate endDate) {
-        validateDateRange(startDate, endDate);
-        return salesRepository.findSalesByStoreAndPeriod(storeId, startDate, endDate);
-    }
-
-    private void validateDateRange(LocalDate start, LocalDate end) {
-        if (start.isAfter(end)) {
-            throw new InvalidDateRangeException("Start date must be before end date");
-        }
-    }
-}
-```
-
-### Infrastructure Layer - Adapter (ClickHouse)
-
-```java
-// infrastructure/adapter/out/persistence/ClickHouseRepositoryImpl.java
-@Repository
-@RequiredArgsConstructor
-public class ClickHouseRepositoryImpl implements SalesRepository {
-
-    private final JdbcTemplate jdbcTemplate;
-
-    @Override
-    public SalesReport findSalesByStoreAndPeriod(String storeId, LocalDate start, LocalDate end) {
-        String sql = """
-            SELECT store_id, count() as tickets, sum(total_amount) as sales
-            FROM fact_tickets
-            WHERE store_id = ? AND ticket_date BETWEEN ? AND ?
-            GROUP BY store_id
-            """;
-        return jdbcTemplate.queryForObject(sql, this::mapToSalesReport, storeId, start, end);
-    }
-}
-```
-
-### Infrastructure Layer - LLM Adapters
-
-```java
-// infrastructure/adapter/out/llm/GrokLlmAdapter.java (Dev/MVP - Gratuito)
 @Component
-@Profile("dev")
-@RequiredArgsConstructor
-public class GrokLlmAdapter implements LlmPort {
-
-    private final OpenAiChatModel grokModel;  // Usa API compatible OpenAI
-
-    @Override
-    public Flux<String> streamResponse(String prompt, List<Tool> tools) {
-        return ChatClient.builder(grokModel)
-            .build()
-            .prompt().user(prompt).tools(tools)
-            .stream().content();
-    }
-}
-
-// infrastructure/adapter/out/llm/OllamaLlmAdapter.java (Producción - Local)
-@Component
-@Profile("prod")
-@RequiredArgsConstructor
-public class OllamaLlmAdapter implements LlmPort {
-
-    private final OllamaChatModel ollamaModel;
-
-    @Override
-    public Flux<String> streamResponse(String prompt, List<Tool> tools) {
-        return ChatClient.builder(ollamaModel)
-            .build()
-            .prompt().user(prompt).tools(tools)
-            .stream().content();
-    }
-}
-```
-
-### Infrastructure Layer - Tool con @Tool
-
-```java
-// infrastructure/tools/RetailAnalyticsTools.java
-@Service
-@RequiredArgsConstructor
 public class RetailAnalyticsTools {
-
+    
     private final GetStoreSalesUseCase getStoreSalesUseCase;
     private final GetStoresRankingUseCase getStoresRankingUseCase;
-
-    @Tool(name = "get_store_sales",
-          description = "Obtiene ventas totales de un local en un período")
+    
+    @Tool(description = "Get total sales for a specific store in a date range")
     public SalesReport getStoreSales(
-            @ToolParam(description = "ID del local, ej: '001'") String storeId,
-            @ToolParam(description = "Fecha inicio YYYY-MM-DD") String startDate,
-            @ToolParam(description = "Fecha fin YYYY-MM-DD") String endDate) {
-
-        return getStoreSalesUseCase.execute(
-            storeId,
-            LocalDate.parse(startDate),
-            LocalDate.parse(endDate)
-        );
+        @ToolParam(description = "Store ID (e.g., '001')") String storeId,
+        @ToolParam(description = "Start date (YYYY-MM-DD)") String startDate,
+        @ToolParam(description = "End date (YYYY-MM-DD)") String endDate
+    ) {
+        return getStoreSalesUseCase.execute(storeId, 
+            LocalDate.parse(startDate), LocalDate.parse(endDate));
     }
-}
-```
-
-### Infrastructure Layer - Controller (Adapter In)
-
-```java
-// infrastructure/adapter/in/web/ChatController.java
-@RestController
-@RequestMapping("/api/chat")
-@RequiredArgsConstructor
-public class ChatController {
-
-    private final ChatService chatService;
-
-    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<String>> stream(@RequestBody @Valid ChatRequest request) {
-        return chatService.streamChat(request.message())
-            .map(chunk -> ServerSentEvent.builder(chunk).build());
+    
+    @Tool(description = "Get ranking of stores by total sales")
+    public List<StoreRanking> getStoresRanking(
+        @ToolParam(description = "Start date") String startDate,
+        @ToolParam(description = "End date") String endDate,
+        @ToolParam(description = "Number of results") int limit
+    ) {
+        return getStoresRankingUseCase.execute(
+            LocalDate.parse(startDate), LocalDate.parse(endDate), limit);
     }
 }
 ```
 
 ---
 
-## 🚀 Comandos del Proyecto
+## 🚀 Comandos de Desarrollo
 
 ```bash
-# === INFRAESTRUCTURA ===
+# === DOCKER (Infraestructura) ===
 
-# Levantar ClickHouse (ejecuta scripts de database/ automáticamente)
-docker compose -f docker/docker-compose.dev.yml up -d
+# Levantar servicios de desarrollo
+cd docker
+docker-compose -f docker-compose.dev.yml up -d
+
+# Verificar servicios
+curl http://localhost:8123/ping          # ClickHouse
+curl http://localhost:9090/-/healthy     # Prometheus
+curl http://localhost:8088/health        # Superset
+open http://localhost:8080               # Kafka UI
 
 # === BACKEND (Gradle) ===
 
@@ -414,22 +432,28 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama serve
 ollama pull llama3.1:8b
 
-# === FRONTEND ===
+# === FRONTEND (Angular 21) ===
 
 cd frontend
 npm install
-ng serve
+ng serve  # Abre http://localhost:4200
+
+# Tests con Vitest
+npm test
+
+# Build producción
+ng build --configuration=production
 
 # === VERIFICAR ===
 
 # ClickHouse
-docker exec -it retail-clickhouse clickhouse-client -q "SELECT count() FROM retail_analytics.fact_tickets"
+docker exec -it retail-clickhouse clickhouse-client -q "SELECT count() FROM geo_retail_analytics.fact_sales"
 
 # Backend health
-curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
 
 # Chat test
-curl -X POST http://localhost:8080/api/chat \
+curl -X POST http://localhost:8081/api/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "¿Cuánto vendió el local 001 ayer?"}'
 ```
@@ -487,14 +511,17 @@ docs: update architecture
 > Have the clickhouse-expert agent optimize this query
 > Ask the spring-boot-expert agent to configure SSE streaming
 > Use the llm-integration-expert to setup Ollama
+> Use the devops-expert agent for infrastructure tasks
 ```
 
 ### Skills Disponibles
 
 Se activan automáticamente según el contexto:
-- **angular21**: Desarrollo frontend con Signals, Zoneless
+- **angular21**: Desarrollo frontend con Signals, Zoneless, Control Flow
 - **spring-ai-mcp**: Creación de tools con @Tool + DDD
 - **clickhouse**: Queries, schema design, optimización
+- **kafka-integration**: Event streaming
+- **monitoring**: Métricas con Prometheus + Superset
 - **grok-integration**: Configuración Grok (dev/MVP gratuito)
 - **ollama-integration**: Configuración Ollama (producción local)
 - **retail-domain**: Métricas y conceptos de retail
@@ -508,6 +535,8 @@ Se activan automáticamente según el contexto:
 - [ ] Docker Compose con ClickHouse funcionando
 - [ ] Schema creado con datos de prueba
 - [ ] Cuenta Grok creada (gratuita) para desarrollo
+- [ ] Kafka + Zookeeper configurados
+- [ ] Prometheus + Superset configurados
 
 ### Fase 2: Backend (DDD + Clean Code + Gradle)
 - [ ] Proyecto Spring Boot 3.4 con Gradle 8.11 creado
@@ -521,11 +550,13 @@ Se activan automáticamente según el contexto:
 - [ ] Endpoint SSE streaming
 - [ ] Tests unitarios por capa
 
-### Fase 3: Frontend
-- [ ] Proyecto Angular 21 creado
+### Fase 3: Frontend (Angular 21)
+- [ ] Proyecto Angular 21 creado con Zoneless
 - [ ] Componente Chat con Signals
-- [ ] Servicio SSE streaming
+- [ ] Servicio SSE streaming con fetch API
 - [ ] UI con Tailwind CSS 4
+- [ ] Control Flow (@if, @for, @defer)
+- [ ] Tests con Vitest
 
 ### Fase 4: Integración y MVP
 - [ ] Flujo completo end-to-end con Grok (dev)

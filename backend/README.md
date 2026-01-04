@@ -1,289 +1,410 @@
-# Backend - Spring Boot + DDD + Clean Code
+# Frontend - Angular 21 Chat UI
 
-## Descripcion
+## Overview
 
-Backend unificado con arquitectura **Domain-Driven Design (DDD)** y principios **Clean Code**:
+Interfaz de chat conversacional para consultas de analytics usando Angular 21 con Signals, Zoneless change detection, y streaming SSE.
 
-- **Domain Layer**: Entidades de negocio y puertos (interfaces)
-- **Application Layer**: Use Cases y orquestacion
-- **Infrastructure Layer**: Adapters (Controllers, Repositories, LLM clients)
+## Tech Stack
 
-## Stack
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Angular** | 21.x | Framework principal |
+| **TypeScript** | 5.6.x | Type safety |
+| **Tailwind CSS** | 4.x | Styling utility-first |
+| **Signals** | Built-in | State management reactivo |
+| **Zoneless** | Default | Change detection optimizado |
+| **Vitest** | 3.x | Unit testing |
+| **fetch API** | Native | SSE streaming |
 
-- **Java**: 21 LTS
-- **Spring Boot**: 3.4.x
-- **Build Tool**: Gradle 8.11.x
-- **Spring AI**: 1.0.x (para LLM y @Tool)
-- **ClickHouse JDBC**: 0.7.x
+## Key Features
 
-## Integraciones LLM
+- ✅ **Zoneless Change Detection** - Sin Zone.js, mejor performance
+- ✅ **Signals** - Estado reactivo con `signal()`, `computed()`, `effect()`
+- ✅ **linkedSignal** - Estado dependiente que puede ser modificado
+- ✅ **resource()** - Fetching async reactivo
+- ✅ **Control Flow** - `@if`, `@for`, `@switch`, `@defer`
+- ✅ **Standalone Components** - Sin NgModules
+- ✅ **SSE Streaming** - Respuestas en tiempo real
+- ✅ **OnPush** - Change detection optimizado
 
-| Perfil | LLM Provider | Uso | Configuracion |
-|--------|--------------|-----|---------------|
-| `dev` | **Grok (xAI)** | Desarrollo y MVP | Gratuito, API compatible OpenAI |
-| `prod` | **Ollama** | Produccion | Local, datos sensibles seguros |
-
-## Estructura DDD
-
-```
-src/main/java/com/geocom/retail/
-├── RetailAnalyticsApp.java           # Main
-│
-├── application/                      # CAPA APPLICATION
-│   ├── service/
-│   │   └── ChatService.java                  # Orquesta LLM + Tools
-│   ├── usecase/
-│   │   ├── GetStoreSalesUseCase.java
-│   │   ├── GetStoresRankingUseCase.java
-│   │   ├── GetTopProductsUseCase.java
-│   │   └── ComparePeriodsUseCase.java
-│   ├── dto/
-│   │   ├── ChatRequest.java
-│   │   └── ChatResponse.java
-│   └── port/
-│       └── LlmPort.java                      # Puerto para LLM
-│
-├── domain/                           # CAPA DOMAIN
-│   ├── model/
-│   │   ├── Store.java
-│   │   ├── Ticket.java
-│   │   ├── SalesReport.java
-│   │   └── StoreRanking.java
-│   ├── repository/                   # Puertos (Interfaces)
-│   │   └── SalesRepository.java
-│   ├── service/
-│   │   └── SalesAnalyticsDomainService.java
-│   └── exception/
-│       ├── InvalidDateRangeException.java
-│       └── StoreNotFoundException.java
-│
-└── infrastructure/                   # CAPA INFRASTRUCTURE
-    ├── adapter/
-    │   ├── in/
-    │   │   └── api/
-    │   │       ├── ChatController.java       # REST + SSE
-    │   │       └── HealthController.java
-    │   └── out/
-    │       ├── persistence/
-    │       │   └── ClickHouseRepositoryImpl.java
-    │       └── llm/
-    │           ├── GrokLlmAdapter.java       # Dev/MVP (Gratuito)
-    │           └── OllamaLlmAdapter.java     # Produccion (Local)
-    ├── config/
-    │   ├── LlmConfig.java
-    │   └── ClickHouseConfig.java
-    └── tools/
-        └── RetailAnalyticsTools.java         # @Tool methods
-```
-
-## Principios Clean Code Aplicados
-
-1. **Single Responsibility**: Cada clase tiene una unica responsabilidad
-2. **Dependency Inversion**: Domain define puertos, Infrastructure implementa
-3. **Interface Segregation**: Interfaces pequenas y especificas
-4. **Inmutabilidad**: Records para DTOs y Value Objects
-5. **Fail Fast**: Validacion temprana en Use Cases
-6. **Nombres Expresivos**: Codigo auto-documentado
-
-## Setup
-
-### Desarrollo (Grok - Gratuito)
+## Quick Start
 
 ```bash
-# 1. Obtener API Key en https://console.x.ai (gratuito)
-export GROK_API_KEY=your_api_key
+# Install dependencies
+npm install
 
-# 2. Levantar ClickHouse
-docker compose -f ../docker/docker-compose.dev.yml up -d
+# Start development server (proxies /api to backend:8081)
+ng serve
 
-# 3. Iniciar backend
-./gradlew bootRun --args='--spring.profiles.active=dev'
+# Open http://localhost:4200
 ```
 
-### Produccion (Ollama - Local)
+## Project Structure
+
+```
+frontend/
+├── package.json
+├── angular.json
+├── tsconfig.json
+├── postcss.config.js            # Tailwind CSS 4 config
+├── proxy.conf.json              # Proxy /api -> localhost:8081
+├── src/
+│   ├── index.html
+│   ├── main.ts
+│   ├── styles.css               # @import "tailwindcss"
+│   ├── environments/
+│   │   ├── environment.ts
+│   │   └── environment.prod.ts
+│   └── app/
+│       ├── app.ts               # Root component
+│       ├── app.config.ts        # Zoneless + HttpClient + Router
+│       ├── app.routes.ts
+│       ├── core/
+│       │   ├── services/
+│       │   │   ├── api.service.ts
+│       │   │   └── auth.service.ts
+│       │   └── interceptors/
+│       │       └── auth.interceptor.ts
+│       ├── features/
+│       │   ├── chat/
+│       │   │   ├── chat.ts              # Main chat component
+│       │   │   ├── chat.routes.ts
+│       │   │   ├── models/
+│       │   │   │   └── message.model.ts
+│       │   │   ├── components/
+│       │   │   │   ├── chat-input.ts
+│       │   │   │   ├── chat-message.ts
+│       │   │   │   └── chat-history.ts
+│       │   │   └── services/
+│       │   │       ├── chat.service.ts
+│       │   │       └── streaming.service.ts
+│       │   └── shared/              # Solo para 2+ features
+│       │       ├── components/
+│       │       │   ├── spinner.ts
+│       │       │   └── markdown.ts
+│       │       ├── pipes/
+│       │       │   └── relative-time.pipe.ts
+│       │       └── directives/
+│       │           └── auto-scroll.directive.ts
+```
+
+## App Configuration
+
+```typescript
+// app.config.ts
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { routes } from './app.routes';
+import { authInterceptor } from '@core/interceptors/auth.interceptor';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),  // Sin Zone.js
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor]))
+  ]
+};
+```
+
+## Signals para State Management
+
+```typescript
+// chat.service.ts
+import { Injectable, signal, computed } from '@angular/core';
+
+interface ChatState {
+  messages: Message[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ChatService {
+  // Private state
+  private readonly state = signal<ChatState>({
+    messages: [],
+    isLoading: false,
+    error: null
+  });
+  
+  // Public selectors (readonly)
+  readonly messages = computed(() => this.state().messages);
+  readonly isLoading = computed(() => this.state().isLoading);
+  readonly error = computed(() => this.state().error);
+  readonly hasMessages = computed(() => this.state().messages.length > 0);
+  
+  // Actions
+  addMessage(message: Message): void {
+    this.state.update(s => ({
+      ...s,
+      messages: [...s.messages, message]
+    }));
+  }
+  
+  setLoading(loading: boolean): void {
+    this.state.update(s => ({ ...s, isLoading: loading }));
+  }
+  
+  clearMessages(): void {
+    this.state.update(s => ({ ...s, messages: [], error: null }));
+  }
+}
+```
+
+## SSE Streaming con fetch API
+
+```typescript
+// streaming.service.ts
+@Injectable({ providedIn: 'root' })
+export class StreamingService {
+  async streamChat(
+    message: string,
+    callbacks: {
+      onChunk: (chunk: string) => void;
+      onComplete: (fullResponse: string) => void;
+      onError: (error: Error) => void;
+    }
+  ): Promise<void> {
+    const response = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.body) throw new Error('No response body');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n')) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') {
+            callbacks.onComplete(fullResponse);
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.content) {
+              fullResponse += parsed.content;
+              callbacks.onChunk(parsed.content);
+            }
+          } catch { /* skip non-JSON */ }
+        }
+      }
+    }
+    callbacks.onComplete(fullResponse);
+  }
+}
+```
+
+## Standalone Components (Sin `standalone: true`)
+
+```typescript
+// chat-message.ts
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { DatePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-chat-message',
+  // standalone: true NO es necesario - es el default en Angular 21
+  imports: [DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'block',
+    '[class.user-message]': 'message().role === "user"',
+    '[class.assistant-message]': 'message().role === "assistant"'
+  },
+  template: `
+    <div class="flex gap-3 p-4 rounded-lg" 
+         [class]="message().role === 'user' ? 'bg-blue-50 ml-12' : 'bg-gray-50 mr-12'">
+      <div class="flex-1">
+        <p class="text-sm font-medium mb-1">
+          {{ message().role === 'user' ? 'You' : 'Assistant' }}
+        </p>
+        <p class="whitespace-pre-wrap">{{ message().content }}</p>
+        <span class="text-xs text-gray-400 mt-2 block">
+          {{ message().timestamp | date:'short' }}
+        </span>
+      </div>
+    </div>
+  `
+})
+export class ChatMessageComponent {
+  // input() function en lugar de @Input() decorator
+  readonly message = input.required<Message>();
+}
+```
+
+## Control Flow (@if, @for, @switch, @defer)
+
+```html
+<!-- chat.ts template -->
+<div class="flex flex-col h-screen">
+  <!-- Messages -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-4">
+    @for (message of chatService.messages(); track message.id) {
+      <app-chat-message [message]="message" />
+    } @empty {
+      <div class="text-center py-8 text-gray-500">
+        <p>No messages yet. Start a conversation!</p>
+      </div>
+    }
+    
+    @if (isStreaming()) {
+      <div class="bg-gray-50 p-4 rounded-lg mr-12">
+        <p class="whitespace-pre-wrap">{{ streamingContent() }}</p>
+        <span class="inline-block w-2 h-4 bg-blue-500 animate-pulse"></span>
+      </div>
+    }
+  </div>
+  
+  <!-- Heavy component loaded on demand -->
+  @defer (on viewport) {
+    <app-suggestions [context]="chatService.messages()" />
+  } @placeholder {
+    <div class="h-24 bg-gray-100 animate-pulse rounded"></div>
+  }
+  
+  <!-- Input -->
+  <app-chat-input 
+    [disabled]="isStreaming()" 
+    (messageSent)="sendMessage($event)" 
+  />
+</div>
+```
+
+## Commands
 
 ```bash
-# 1. Instalar Ollama
-curl -fsSL https://ollama.com/install.sh | sh
+# Development (with proxy to backend)
+ng serve
 
-# 2. Descargar modelo
-ollama pull llama3.1:8b
+# Build production
+ng build --configuration=production
 
-# 3. Iniciar backend
-./gradlew bootRun --args='--spring.profiles.active=prod'
+# Run tests with Vitest
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Lint
+ng lint
+
+# Generate component
+ng generate component features/feature-name
 ```
 
-## Configuracion
+## Environment Configuration
 
-```yaml
-# application.yml
-spring:
-  application:
-    name: geo-retail-analytics
+```typescript
+// src/environments/environment.ts
+export const environment = {
+  production: false,
+  apiUrl: '/api'  // Proxied to backend
+};
 
-  datasource:
-    url: jdbc:ch://localhost:8123/retail_analytics
-    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
-
-server:
-  port: 8080
-
----
-# application-dev.yml (Grok - Gratuito)
-spring:
-  ai:
-    openai:
-      base-url: https://api.x.ai/v1
-      api-key: ${GROK_API_KEY}
-      chat:
-        model: grok-beta
-        options:
-          temperature: 0.7
-
----
-# application-prod.yml (Ollama - Local)
-spring:
-  ai:
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        model: llama3.1:8b
-        options:
-          temperature: 0.7
-          num-predict: 2000
+// src/environments/environment.prod.ts
+export const environment = {
+  production: true,
+  apiUrl: '/api'
+};
 ```
 
-## Endpoints
+## Proxy Configuration
 
-| Metodo | Endpoint | Descripcion |
-|--------|----------|-------------|
-| POST | `/api/chat` | Chat sincrono |
-| POST | `/api/chat/stream` | Chat con streaming SSE |
-| GET | `/actuator/health` | Health check |
-
-## Tools Disponibles
-
-Los tools estan definidos en `RetailAnalyticsTools.java` y usan Use Cases:
-
-| Tool | Use Case | Descripcion |
-|------|----------|-------------|
-| `get_store_sales` | GetStoreSalesUseCase | Ventas de un local en periodo |
-| `get_stores_ranking` | GetStoresRankingUseCase | Ranking de locales |
-| `get_top_products` | GetTopProductsUseCase | Productos mas vendidos |
-| `get_hourly_traffic` | GetHourlyTrafficUseCase | Trafico por hora |
-| `compare_periods` | ComparePeriodsUseCase | Comparar dos periodos |
-
-## Perfiles
-
-| Perfil | LLM | Comando |
-|--------|-----|---------|
-| `dev` | Grok (xAI) gratuito | `./gradlew bootRun --args='--spring.profiles.active=dev'` |
-| `prod` | Ollama local | `./gradlew bootRun --args='--spring.profiles.active=prod'` |
-
-## Dependencias Gradle
-
-```kotlin
-// build.gradle.kts
-plugins {
-    java
-    id("org.springframework.boot") version "3.4.0"
-    id("io.spring.dependency-management") version "1.1.6"
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-dependencies {
-    // Spring Boot
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    // Spring AI
-    implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")  // Grok compatible
-    implementation("org.springframework.ai:spring-ai-ollama-spring-boot-starter")
-
-    // ClickHouse
-    implementation("com.clickhouse:clickhouse-jdbc:0.7.0:all")
-
-    // Lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-
-    // Testing
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
-    }
+```json
+// proxy.conf.json
+{
+  "/api": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true
+  }
 }
 ```
 
-## Comandos Gradle
+## Testing con Vitest
 
-```bash
-# Build
-./gradlew build
+```typescript
+// chat.service.spec.ts
+import { describe, it, expect, beforeEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { ChatService } from './chat.service';
 
-# Run con perfil dev (Grok)
-./gradlew bootRun --args='--spring.profiles.active=dev'
-
-# Run con perfil prod (Ollama)
-./gradlew bootRun --args='--spring.profiles.active=prod'
-
-# Tests
-./gradlew test
-
-# Clean
-./gradlew clean
-
-# Check dependencies
-./gradlew dependencies
+describe('ChatService', () => {
+  let service: ChatService;
+  
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(ChatService);
+  });
+  
+  it('should add message', () => {
+    const message = {
+      id: '1',
+      role: 'user' as const,
+      content: 'Hello',
+      timestamp: new Date()
+    };
+    
+    service.addMessage(message);
+    
+    expect(service.messages()).toContain(message);
+    expect(service.hasMessages()).toBe(true);
+  });
+  
+  it('should clear messages', () => {
+    service.addMessage({ id: '1', role: 'user', content: 'Test', timestamp: new Date() });
+    
+    service.clearMessages();
+    
+    expect(service.messages()).toHaveLength(0);
+  });
+});
 ```
 
-## Variables de Entorno
+## UI Features
 
-| Variable | Descripcion | Perfil |
-|----------|-------------|--------|
-| `GROK_API_KEY` | API Key de Grok (xAI) | dev |
-| `CLICKHOUSE_HOST` | Host de ClickHouse | todos |
-| `OLLAMA_BASE_URL` | URL de Ollama | prod |
+- 💬 Chat con streaming en tiempo real
+- 💡 Sugerencias de consultas rápidas
+- ⏳ Indicador de carga animado (skeleton + pulse)
+- 📝 Formateo básico de Markdown
+- 📜 Scroll automático a mensajes nuevos
+- 🗑️ Botón para limpiar conversación
+- ⚠️ Mensajes de error con opción de reintento
+- ♿ Accesibilidad WCAG AA
 
-## Testing
+## Performance Optimizations
 
-```java
-// Test de Use Case
-@SpringBootTest
-class GetStoreSalesUseCaseTest {
+1. **Zoneless** - Sin overhead de Zone.js
+2. **OnPush** - Solo actualiza cuando cambian inputs o signals
+3. **@defer** - Lazy loading de componentes pesados
+4. **track** - Tracking eficiente en @for loops
+5. **computed()** - Memoización automática de estado derivado
+6. **Tailwind CSS** - CSS purgado en producción
+7. **esbuild** - Build ultra-rápido
 
-    @Autowired
-    private GetStoreSalesUseCase useCase;
+## Angular 21 Best Practices Applied
 
-    @MockBean
-    private SalesRepository salesRepository;
-
-    @Test
-    void execute_validInput_returnsSalesReport() {
-        // Arrange
-        when(salesRepository.findSalesByStoreAndPeriod("001", start, end))
-            .thenReturn(expectedReport);
-
-        // Act
-        SalesReport result = useCase.execute("001", start, end);
-
-        // Assert
-        assertThat(result.totalSales()).isEqualByComparingTo("45000.00");
-    }
-
-    @Test
-    void execute_invalidDateRange_throwsException() {
-        assertThatThrownBy(() -> useCase.execute("001", end, start))
-            .isInstanceOf(InvalidDateRangeException.class);
-    }
-}
-```
+| Pattern | Implementation |
+|---------|---------------|
+| State Management | Signals (`signal`, `computed`) |
+| Dependency Injection | `inject()` function |
+| Component Inputs | `input()` function |
+| Component Outputs | `output()` function |
+| Control Flow | `@if`, `@for`, `@switch` |
+| Lazy Loading | `@defer` blocks |
+| Change Detection | Zoneless + OnPush |
+| HTTP | `provideHttpClient(withFetch())` |
+| Styling | Tailwind CSS 4 |
+| Testing | Vitest |
