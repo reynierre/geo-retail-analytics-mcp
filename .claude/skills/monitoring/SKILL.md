@@ -132,7 +132,7 @@ sum by (store_id) (rate(sales_processed_total[5m]))
 ### SalesMetrics.java
 
 ```java
-package com.geocom.retail.infrastructure.metrics;
+package uy.com.geocom.retail.infrastructure.metrics;
 
 @Component
 @RequiredArgsConstructor

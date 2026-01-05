@@ -44,9 +44,9 @@ Sale (Aggregate Root)
 ### SaleMapper.java
 
 ```java
-package com.geocom.retail.infrastructure.mapper;
+package uy.com.geocom.retail.infrastructure.mapper;
 
-import com.geocom.retail.domain.sale.*;
+import uy.com.geocom.retail.domain.sale.*;
 import uy.com.geocom.geopos.services.exporter.sale.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -243,7 +243,7 @@ public class SaleMapper {
 Best for real-time ingestion with high throughput.
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.kafka;
+package uy.com.geocom.retail.infrastructure.adapter.out.kafka;
 
 @Service
 @RequiredArgsConstructor
@@ -286,7 +286,7 @@ public class KafkaSaleExporter implements SaleExporter {
 For lower volume or when Kafka is not available.
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.http;
+package uy.com.geocom.retail.infrastructure.adapter.out.http;
 
 @Service
 @RequiredArgsConstructor
@@ -323,7 +323,7 @@ public class HttpSaleExporter implements SaleExporter {
 For bulk loading historical data.
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.batch;
+package uy.com.geocom.retail.infrastructure.adapter.out.batch;
 
 @Service
 @RequiredArgsConstructor
@@ -352,7 +352,7 @@ public class BatchSaleExporter {
 ## ClickHouse Repository
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.persistence;
+package uy.com.geocom.retail.infrastructure.adapter.out.persistence;
 
 @Repository
 @RequiredArgsConstructor

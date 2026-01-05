@@ -130,9 +130,9 @@ spring:
 ## Ollama Adapter (DDD Infrastructure Layer)
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.llm;
+package uy.com.geocom.retail.infrastructure.adapter.out.llm;
 
-import com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.application.port.LlmPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;

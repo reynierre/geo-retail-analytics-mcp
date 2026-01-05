@@ -428,7 +428,7 @@ dependencies {
 ### Repository Implementation (DDD Infrastructure Layer)
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.persistence;
+package uy.com.geocom.retail.infrastructure.adapter.out.persistence;
 
 @Repository
 @RequiredArgsConstructor

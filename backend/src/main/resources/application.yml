@@ -39,5 +39,5 @@ management:
 logging:
   level:
     root: INFO
-    com.geocom.retail: DEBUG
+    uy.com.geocom.retail: DEBUG
     org.springframework.ai: DEBUG

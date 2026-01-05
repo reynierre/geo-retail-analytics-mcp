@@ -96,7 +96,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.geocom.retail.domain.sale"
+        spring.json.trusted.packages: "uy.com.geocom.retail.domain.sale"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -105,7 +105,7 @@ spring:
 ## Consumer Implementation
 
 ```java
-package com.geocom.retail.infrastructure.adapter.in.kafka;
+package uy.com.geocom.retail.infrastructure.adapter.in.kafka;
 
 @Component
 @RequiredArgsConstructor
@@ -141,7 +141,7 @@ public class SaleEventConsumer {
 ## Producer Implementation
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.kafka;
+package uy.com.geocom.retail.infrastructure.adapter.out.kafka;
 
 @Service
 @RequiredArgsConstructor

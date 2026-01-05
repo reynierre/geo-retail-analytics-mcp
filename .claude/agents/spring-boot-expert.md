@@ -69,7 +69,7 @@ API: REST + SSE Streaming
 ### Domain Layer - Entity
 
 ```java
-package com.geocom.retail.domain.model;
+package uy.com.geocom.retail.domain.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -102,10 +102,10 @@ public record SalesReport(
 ### Domain Layer - Repository Interface (Port)
 
 ```java
-package com.geocom.retail.domain.repository;
+package uy.com.geocom.retail.domain.repository;
 
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.model.StoreRanking;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.model.StoreRanking;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -126,12 +126,12 @@ public interface SalesRepository {
 ### Application Layer - Use Case
 
 ```java
-package com.geocom.retail.application.usecase;
+package uy.com.geocom.retail.application.usecase;
 
-import com.geocom.retail.domain.exception.InvalidDateRangeException;
-import com.geocom.retail.domain.exception.StoreNotFoundException;
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.repository.SalesRepository;
+import uy.com.geocom.retail.domain.exception.InvalidDateRangeException;
+import uy.com.geocom.retail.domain.exception.StoreNotFoundException;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -178,7 +178,7 @@ public class GetStoreSalesUseCase {
 ### Application Layer - Port for LLM
 
 ```java
-package com.geocom.retail.application.port;
+package uy.com.geocom.retail.application.port;
 
 import reactor.core.publisher.Flux;
 import java.util.List;
@@ -198,10 +198,10 @@ public interface LlmPort {
 ### Infrastructure Layer - Repository Implementation
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.persistence;
+package uy.com.geocom.retail.infrastructure.adapter.out.persistence;
 
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.repository.SalesRepository;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -260,9 +260,9 @@ public class ClickHouseRepositoryImpl implements SalesRepository {
 ### Infrastructure Layer - LLM Adapters
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.llm;
+package uy.com.geocom.retail.infrastructure.adapter.out.llm;
 
-import com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.application.port.LlmPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -309,9 +309,9 @@ public class GrokLlmAdapter implements LlmPort {
 ```
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.llm;
+package uy.com.geocom.retail.infrastructure.adapter.out.llm;
 
-import com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.application.port.LlmPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -360,11 +360,11 @@ public class OllamaLlmAdapter implements LlmPort {
 ### Infrastructure Layer - Controller (Adapter In)
 
 ```java
-package com.geocom.retail.infrastructure.adapter.in.web;
+package uy.com.geocom.retail.infrastructure.adapter.in.api;
 
-import com.geocom.retail.application.dto.ChatRequest;
-import com.geocom.retail.application.dto.ChatResponse;
-import com.geocom.retail.application.service.ChatService;
+import uy.com.geocom.retail.application.dto.ChatRequest;
+import uy.com.geocom.retail.application.dto.ChatResponse;
+import uy.com.geocom.retail.application.service.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -412,12 +412,12 @@ public class ChatController {
 ### Infrastructure Layer - Tools
 
 ```java
-package com.geocom.retail.infrastructure.tools;
+package uy.com.geocom.retail.infrastructure.tools;
 
-import com.geocom.retail.application.usecase.GetStoreSalesUseCase;
-import com.geocom.retail.application.usecase.GetStoresRankingUseCase;
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.model.StoreRanking;
+import uy.com.geocom.retail.application.usecase.GetStoreSalesUseCase;
+import uy.com.geocom.retail.application.usecase.GetStoresRankingUseCase;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.model.StoreRanking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;

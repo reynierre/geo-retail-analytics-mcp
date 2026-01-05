@@ -74,9 +74,9 @@ spring:
 ### Grok Adapter (Infrastructure Layer)
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.llm;
+package uy.com.geocom.retail.infrastructure.adapter.out.llm;
 
-import com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.application.port.LlmPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -187,9 +187,9 @@ spring:
 ### Ollama Adapter (Infrastructure Layer)
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.llm;
+package uy.com.geocom.retail.infrastructure.adapter.out.llm;
 
-import com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.application.port.LlmPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -255,7 +255,7 @@ public class OllamaLlmAdapter implements LlmPort {
 ## LLM Port Interface (Application Layer)
 
 ```java
-package com.geocom.retail.application.port;
+package uy.com.geocom.retail.application.port;
 
 import reactor.core.publisher.Flux;
 
@@ -285,7 +285,7 @@ public interface LlmPort {
 ### LLM Config Class
 
 ```java
-package com.geocom.retail.infrastructure.config;
+package uy.com.geocom.retail.infrastructure.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -369,11 +369,11 @@ public class LlmConfig {
 ### Chat Service Implementation
 
 ```java
-package com.geocom.retail.application.service;
+package uy.com.geocom.retail.application.service;
 
-import com.geocom.retail.application.dto.ChatResponse;
-import com.geocom.retail.application.port.LlmPort;
-import com.geocom.retail.infrastructure.tools.RetailAnalyticsTools;
+import uy.com.geocom.retail.application.dto.ChatResponse;
+import uy.com.geocom.retail.application.port.LlmPort;
+import uy.com.geocom.retail.infrastructure.tools.RetailAnalyticsTools;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -65,12 +65,12 @@ dependencyManagement {
 ### Infrastructure Layer - Tools
 
 ```java
-package com.geocom.retail.infrastructure.tools;
+package uy.com.geocom.retail.infrastructure.tools;
 
-import com.geocom.retail.application.usecase.GetStoreSalesUseCase;
-import com.geocom.retail.application.usecase.GetStoresRankingUseCase;
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.model.StoreRanking;
+import uy.com.geocom.retail.application.usecase.GetStoreSalesUseCase;
+import uy.com.geocom.retail.application.usecase.GetStoresRankingUseCase;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.model.StoreRanking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
@@ -154,12 +154,12 @@ public class RetailAnalyticsTools {
 ### Application Layer - Use Case
 
 ```java
-package com.geocom.retail.application.usecase;
+package uy.com.geocom.retail.application.usecase;
 
-import com.geocom.retail.domain.exception.InvalidDateRangeException;
-import com.geocom.retail.domain.exception.StoreNotFoundException;
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.repository.SalesRepository;
+import uy.com.geocom.retail.domain.exception.InvalidDateRangeException;
+import uy.com.geocom.retail.domain.exception.StoreNotFoundException;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -209,7 +209,7 @@ public class GetStoreSalesUseCase {
 
 ```java
 // domain/model/SalesReport.java
-package com.geocom.retail.domain.model;
+package uy.com.geocom.retail.domain.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -225,9 +225,9 @@ public record SalesReport(
 ) {}
 
 // domain/repository/SalesRepository.java (Port)
-package com.geocom.retail.domain.repository;
+package uy.com.geocom.retail.domain.repository;
 
-import com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.model.SalesReport;
 import java.time.LocalDate;
 
 public interface SalesRepository {
@@ -239,10 +239,10 @@ public interface SalesRepository {
 ### Infrastructure Layer - Repository Implementation
 
 ```java
-package com.geocom.retail.infrastructure.adapter.out.persistence;
+package uy.com.geocom.retail.infrastructure.adapter.out.persistence;
 
-import com.geocom.retail.domain.model.SalesReport;
-import com.geocom.retail.domain.repository.SalesRepository;
+import uy.com.geocom.retail.domain.model.SalesReport;
+import uy.com.geocom.retail.domain.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

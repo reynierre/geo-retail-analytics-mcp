@@ -45,7 +45,7 @@ Testing: JUnit 5 + MockMvc
 ### Tool Definition with @Tool Annotation
 
 ```java
-package com.geocom.retailanalytics.mcp.tools;
+package uy.com.geocom.retailanalytics.mcp.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -199,7 +199,7 @@ public class RetailAnalyticsTools {
 ### Result DTOs
 
 ```java
-package com.geocom.retailanalytics.mcp.dto;
+package uy.com.geocom.retailanalytics.mcp.dto;
 
 public record StoreSalesResult(
     String storeId,
@@ -257,7 +257,7 @@ public record PeriodMetrics(
 ### MCP Server Configuration
 
 ```java
-package com.geocom.retailanalytics.mcp.config;
+package uy.com.geocom.retailanalytics.mcp.config;
 
 import org.springframework.ai.mcp.server.McpServer;
 import org.springframework.ai.mcp.server.transport.HttpServerTransport;

@@ -18,5 +18,5 @@ spring:
 logging:
   level:
     root: INFO
-    com.geocom.retail: INFO
+    uy.com.geocom.retail: INFO
     org.springframework.ai: WARN
