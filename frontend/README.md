@@ -1,16 +1,18 @@
-# Frontend - Angular 19 Chat UI
+# Frontend - Angular 21 Chat UI
 
 ## Overview
 
-Interfaz de chat conversacional para consultas de analytics usando Angular 19 con Signals y streaming SSE.
+Interfaz de chat conversacional para consultas de analytics usando Angular 21 con Signals, Zoneless Change Detection y streaming SSE.
 
 ## Tech Stack
 
-- **Angular**: 19.x (compatible con 21 cuando este disponible)
-- **Styling**: Tailwind CSS 3.4.x
+- **Angular**: 21.0.3
+- **TypeScript**: 5.9.2
+- **Styling**: Tailwind CSS 4.0.0
 - **State**: Signals (no NgRx needed)
 - **HTTP**: fetch API with SSE
-- **Build**: Angular CLI
+- **Change Detection**: Zoneless (provideZonelessChangeDetection)
+- **Build**: esbuild (Angular CLI 21)
 
 ## Quick Start
 
@@ -19,7 +21,9 @@ Interfaz de chat conversacional para consultas de analytics usando Angular 19 co
 npm install
 
 # Start development server (proxies /api to backend:8081)
-ng serve
+npm start
+# or
+npx ng serve
 
 # Open http://localhost:4200
 ```
@@ -30,51 +34,76 @@ ng serve
 frontend/
 ├── package.json
 ├── angular.json
-├── tailwind.config.js
+├── postcss.config.js         # Tailwind CSS 4 config
 ├── proxy.conf.json           # Proxy /api -> localhost:8081
-├── src/
-│   ├── index.html
-│   ├── main.ts
-│   ├── styles.css            # Tailwind + custom styles
-│   ├── environments/
-│   │   ├── environment.ts
-│   │   └── environment.prod.ts
-│   └── app/
-│       ├── app.component.ts
-│       ├── app.config.ts
-│       ├── app.routes.ts
-│       ├── core/
-│       │   └── services/
-│       │       └── api.service.ts        # Health checks
-│       ├── features/
-│       │   └── chat/
-│       │       ├── chat.component.ts     # Main container
-│       │       ├── models/
-│       │       │   └── message.model.ts
-│       │       ├── components/
-│       │       │   ├── chat-input.component.ts
-│       │       │   └── chat-message.component.ts
-│       │       └── services/
-│       │           └── chat.service.ts   # SSE streaming
-│       └── shared/
-│           ├── components/
-│           │   └── spinner.component.ts
-│           └── pipes/
-│               └── relative-time.pipe.ts
+├── tsconfig.json             # TypeScript config with path aliases
+├── public/                   # Static assets
+└── src/
+    ├── index.html
+    ├── main.ts
+    ├── styles.css            # Tailwind CSS 4 entry
+    └── app/
+        ├── app.ts            # Root component (no .component suffix)
+        ├── app.config.ts     # App configuration with Zoneless
+        ├── app.routes.ts     # Lazy loaded routes
+        ├── core/             # Singleton services
+        │   └── services/
+        └── features/
+            ├── chat/
+            │   ├── chat.ts           # Main container
+            │   ├── models/
+            │   │   └── message.model.ts
+            │   ├── components/
+            │   │   ├── chat-input.ts
+            │   │   └── chat-message.ts
+            │   └── services/
+            │       ├── chat.service.ts      # State management
+            │       └── streaming.service.ts # SSE streaming
+            └── shared/
+                └── components/
+                    └── spinner.ts
 ```
 
 ## Key Features
 
-### Signals for Reactive State
+### Angular 21 Modern Patterns
 
+**Zoneless Change Detection:**
+```typescript
+// app.config.ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),
+    provideRouter(routes),
+    provideHttpClient(withFetch())
+  ]
+};
+```
+
+**Signals for Reactive State:**
 ```typescript
 // chat.service.ts
-readonly messages = signal<Message[]>([]);
-readonly isStreaming = signal(false);
-readonly error = signal<string | null>(null);
+private readonly state = signal<ChatState>({
+  messages: [],
+  isLoading: false,
+  error: null
+});
 
-// Computed values
-readonly hasMessages = computed(() => this.messages().length > 0);
+readonly messages = computed(() => this.state().messages);
+readonly hasMessages = computed(() => this.state().messages.length > 0);
+```
+
+**Modern Control Flow:**
+```typescript
+@if (isStreaming()) {
+  <app-spinner />
+} @else if (error()) {
+  <app-error [message]="error()" />
+} @else {
+  @for (message of messages(); track message.id) {
+    <app-chat-message [message]="message" />
+  }
+}
 ```
 
 ### SSE Streaming with fetch API
@@ -94,17 +123,29 @@ while (true) {
 }
 ```
 
-### Standalone Components
-
+**input() and output() Functions:**
 ```typescript
 @Component({
   selector: 'app-chat-message',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],  // standalone is default in Angular 21
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `...`
 })
 export class ChatMessageComponent {
-  message = input.required<Message>();
+  // Use input() function instead of @Input() decorator
+  readonly message = input.required<Message>();
+
+  // Use output() function instead of @Output() decorator
+  readonly clicked = output<void>();
+}
+```
+
+**inject() Function:**
+```typescript
+export class ChatComponent {
+  // Use inject() instead of constructor injection
+  protected readonly chatService = inject(ChatService);
+  private readonly streamingService = inject(StreamingService);
 }
 ```
 
@@ -112,24 +153,28 @@ export class ChatMessageComponent {
 
 ```bash
 # Development (with proxy to backend)
-ng serve
+npm start
+# or
+npx ng serve
 
 # Build production
-ng build --configuration=production
+npm run build
+# or
+npx ng build
+
+# Watch mode
+npm run watch
 
 # Run tests
 npm test
 ```
 
-## Environment Configuration
+## Build Output
 
-```typescript
-// src/environments/environment.ts
-export const environment = {
-  production: false,
-  apiUrl: '/api'  // Proxied to backend
-};
-```
+El build genera archivos optimizados con:
+- **Initial bundle**: ~291 KB (~82 KB gzipped)
+- **Lazy loaded chat**: ~32 KB (~9 KB gzipped)
+- **Total < 500 KB** (cumple con performance target)
 
 ## Proxy Configuration
 
@@ -147,10 +192,44 @@ El archivo `proxy.conf.json` redirige `/api/*` al backend:
 
 ## UI Features
 
-- Chat con streaming en tiempo real
-- Sugerencias de consultas rapidas
+- Chat con streaming SSE en tiempo real
+- Sugerencias de consultas integradas
 - Indicador de carga animado
-- Formateo basico de Markdown
-- Scroll automatico a mensajes nuevos
-- Boton para limpiar conversacion
-- Mensajes de error con opcion de reintento
+- Scroll automático a mensajes nuevos
+- Mensajes de error con opción de reintentar
+- Diseño responsive con Tailwind CSS 4
+- Lazy loading del componente Chat
+
+## TypeScript Path Aliases
+
+```typescript
+// Configurados en tsconfig.json
+import { ChatService } from '@features/chat/services/chat.service';
+import { SpinnerComponent } from '@shared/components/spinner';
+import { ApiService } from '@core/services/api.service';
+```
+
+## Angular 21 Best Practices Used
+
+✅ Zoneless change detection
+✅ Signals para estado reactivo
+✅ Computed signals para valores derivados
+✅ input()/output() functions (no decorators)
+✅ inject() function (no constructor injection)
+✅ Modern control flow (@if, @for, @else)
+✅ Lazy loading con loadComponent()
+✅ OnPush change detection strategy
+✅ No .component suffix en archivos
+✅ Tailwind CSS 4 con @tailwindcss/postcss
+✅ TypeScript 5.9+ (strict mode)
+✅ Path aliases configurados
+
+## Backend Integration
+
+El frontend espera que el backend esté corriendo en `http://localhost:8081` con los siguientes endpoints:
+
+- `POST /api/chat/stream` - SSE streaming para chat
+  - Request: `{ "message": "¿Cuánto vendió el local 001?" }`
+  - Response: Server-Sent Events con chunks de texto
+
+Ver `backend/` para la implementación Spring Boot.
